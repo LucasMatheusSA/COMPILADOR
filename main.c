@@ -3,7 +3,7 @@
 #include "scanner.h"
 #include "parser.h"
 
-// teste 1 
+// teste 12
 
 FILE * criarArquivo(char nome[]) {
 	FILE * arq;
