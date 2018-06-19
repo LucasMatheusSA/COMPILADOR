@@ -430,7 +430,6 @@ int EXPR_RELACIONAL(FILE *arq) {
 			}
 			else {
 				if(((aux.tipo==_float || aux.tipo==digito_float || aux.tipo==digito_int || aux.tipo== _int) && (status.tipo==_float || status.tipo==digito_float || status.tipo==digito_int || status.tipo== _int)) || (aux.tipo == _char && status.tipo==_char)){
-					return 1;
 					if((aux.tipo ==  _float || aux.tipo == digito_float)&&(status.tipo==_int || status.tipo==digito_int)){
 						printf("\t%s = float %s\n",converte(),status.valor);atualizaT(&status);
 					}
@@ -438,6 +437,7 @@ int EXPR_RELACIONAL(FILE *arq) {
 						printf("\t%s = float %s\n",converte(),aux.valor);atualizaT(&aux);
 					}
 					printf("\tT0 = %s %s %s\n",status.valor,relacional,aux.valor);
+					return 1;
 				}else{ 
 					printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nErro de compatibilidade de tipo na expressao aritimetica!\n", linha, coluna, token.tipo); return 0;
 				}
@@ -572,7 +572,7 @@ TOKEN FATOR(FILE *arq) {
 	if (token.tipo == parenteses1) {
 		token=scanner(arq);
 		status=EXPR_ARIT(arq);
-		if (status.tipo = 0) {
+		if (status.tipo == 0) {
 			return tokenRetorno;
 		}
 		else {
