@@ -3,7 +3,7 @@
 #include "scanner.h"
 #include "parser.h"
 
-// teste 12
+// salvar na internet 
 
 FILE * criarArquivo(char nome[]) {
 	FILE * arq;

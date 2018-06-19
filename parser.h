@@ -1,10 +1,10 @@
 //parser.h
 #include "types.h"
 
-void converte();
+
 int variavel();
 
-
+char * converte();
 int TIPO( FILE *arq);
 int DECL_VAR( FILE *arq);
 int BLOCO( FILE *arq);

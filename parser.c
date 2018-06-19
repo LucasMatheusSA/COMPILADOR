@@ -4,6 +4,7 @@
 #include "parser.h"
 #include "fila.h"
 
+char T[50];
 int temporalrelacional=0,temp1=0;
 int temporal=0,label=0;
 TOKEN token;
@@ -27,11 +28,14 @@ printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \n !\n", li
 */
 
 //*************************************************************************************************************************
-void converte();
+//Ctrl + K Ctrl + C / Ctrl K + Ctrl + U
+char *converte(){
+	sprintf(T,"T%d",temporal);
+	temporal++;return T;
+}
 
-int variavel(){
-	temporal++;
-	return temporal;
+void atualizaT(TOKEN *token){
+	strcpy((*token).valor,T);
 }
 //*************************************************************************************************************************
 
@@ -207,7 +211,7 @@ int COMANDO(FILE *arq) {
 				printf("\t(fim expr_rela)\n");
 				if (token.tipo == parenteses2) {
 					token = scanner(arq);
-					printf("\tIF T0 == FLASE goto L%d\n",label1);label++;label++;temporal=0;
+					printf("\tIF T0 == FALSE goto L%d\n",label1);label++;label++;temporal=0;
 					status = COMANDO(arq);
 					if (status == 0) {
 						return 0;
@@ -334,7 +338,7 @@ int INTERACAO(FILE *arq) {
 							token = scanner(arq);
 							if (token.tipo == pvirgula) {
 								token=scanner(arq);
-								printf("\tIF T0 != FALSE L%d\n",label1);temporal=0;
+								printf("\tIF T0 != FALSE goto L%d\n",label1);temporal=0;
 								return 1;
 							}
 							else {
@@ -381,25 +385,13 @@ int ATRIBUICAO(FILE *arq) {
 			status = EXPR_ARIT(arq);
 			if (status.tipo != 0) {
 				if(((aux.tipo==_int || aux.tipo==digito_int) && (status.tipo==_int || status.tipo==digito_int)) || ((aux.tipo==_float || aux.tipo==digito_float) && (status.tipo==_float || status.tipo==digito_float || status.tipo==digito_int || status.tipo== _int)) || (aux.tipo == _char && status.tipo==_char)){
+					if((status.tipo==_int || status.tipo==digito_int)&&(aux.tipo==_float || aux.tipo==digito_float)){
+						printf("\t%s = float %s\n",converte(),status.valor);atualizaT(&status);
+					}
+					printf("\t%s = %s\n",aux.valor,status.valor);
 					if (token.tipo != pvirgula) {
 						printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nFalta de um ';' no fim do comando!\n", linha, coluna, token.tipo); return 0;
 					}else{
-						if((aux.tipo ==  _float || aux.tipo == digito_float) && (status.tipo==_int || status.tipo==digito_int)){
-							if(temporal != 0){
-								printf("\tT%d = float T%d\n",temporal-1,temporal-1);
-								printf("\t%s = T%d\n",aux.valor,temporal-1);
-							}else{
-								printf("\tT%d = float %s\n",temporal,status.valor);
-								printf("\t%s = T%d\n",aux.valor,temporal);
-							}
-						}else {
-							if(temporal != 0){
-								printf("\t%s = T%d\n",aux.valor,temporal-1);
-							}else{
-								printf("\t%s = %s\n",aux.valor,status.valor);
-							}
-						}
-						temporal=0;
 						token=scanner(arq);
 						return 1;
 					}
@@ -416,16 +408,10 @@ int ATRIBUICAO(FILE *arq) {
 
 int EXPR_RELACIONAL(FILE *arq) {
 	TOKEN status;
-	char relacional[3];
 	TOKEN tokenRetorno,aux;
+	char relacional[3];
 	tokenRetorno.tipo=0;tokenRetorno.valor[0]='\0';
-	status=EXPR_ARIT( arq);
-	if(temporal==0){
-		printf("\tT0 = %s\n",status.valor);
-	}else{
-		printf("\tT0 = T%d\n",temporal-1);
-	}
-	aux=status;temporal=0;temporalrelacional++;
+	status=EXPR_ARIT(arq);
 	if (status.tipo == 0) {
 		return 0;
 	}
@@ -437,28 +423,24 @@ int EXPR_RELACIONAL(FILE *arq) {
 			if(token.tipo == MEigual) strcpy(relacional,"<=");
 			if(token.tipo == igualigual) strcpy(relacional,"==");
 			if(token.tipo == diferente) strcpy(relacional,"!=");
-			token = scanner(arq);
-			status = EXPR_ARIT( arq);
-			if(temporal==0){
-				printf("\tT1 = %s\n",status.valor);
-			}else{
-				printf("\tT1 = T%d\n",temporal-1);
-			}
-			if (status.tipo == 0) {
+			token=scanner(arq);
+			aux=EXPR_ARIT(arq);
+			if (aux.tipo == 0) {
 				return 0;
 			}
 			else {
 				if(((aux.tipo==_float || aux.tipo==digito_float || aux.tipo==digito_int || aux.tipo== _int) && (status.tipo==_float || status.tipo==digito_float || status.tipo==digito_int || status.tipo== _int)) || (aux.tipo == _char && status.tipo==_char)){
-					if((aux.tipo == _float || aux.tipo == digito_float)&&(status.tipo == _int || status.tipo == digito_int)){
-						printf("\tT1 = float T1\n");
-					}else if((status.tipo == _int || status.tipo == digito_int)&&(aux.tipo == _float || aux.tipo == digito_float)){
-						printf("\tT0 = float T0\n");
-					}
-					printf("\tT0 = T0 %s T1\n",relacional);
-					temporalrelacional=0;
 					return 1;
-				}else 
+					if((aux.tipo ==  _float || aux.tipo == digito_float)&&(status.tipo==_int || status.tipo==digito_int)){
+						printf("\t%s = float %s\n",converte(),status.valor);atualizaT(&status);
+					}
+					if((status.tipo ==  _float || status.tipo == digito_float)&&(aux.tipo==_int || aux.tipo==digito_int)){
+						printf("\t%s = float %s\n",converte(),aux.valor);atualizaT(&aux);
+					}
+					printf("\tT0 = %s %s %s\n",status.valor,relacional,aux.valor);
+				}else{ 
 					printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nErro de compatibilidade de tipo na expressao aritimetica!\n", linha, coluna, token.tipo); return 0;
+				}
 			}
 		}
 		else {
@@ -468,175 +450,50 @@ int EXPR_RELACIONAL(FILE *arq) {
 }
 
 TOKEN EXPR_ARIT(FILE *arq){
-	int tipo,cont=0,temp2=0;
 	TOKEN status,status2;
 	TOKEN tokenRetorno;
+	int tipo;
 	tokenRetorno.tipo=0;tokenRetorno.valor[0]='\0';
 	if (token.tipo == identificador || token.tipo == digito_float || token.tipo == digito_int || token.tipo == caracter || token.tipo == parenteses1){	
-		temp1=temporal;
-		temporal=0;
 		status=TERMO(arq);
-		temp2=temporal;
-		temporal=temp1;
 		if(status.tipo==0){
 			return tokenRetorno;
 		}else{
 			while(token.tipo ==  adicao || token.tipo == subtracao){
-				cont++;
 				tipo=token.tipo;
 				token=scanner(arq);
 				if (token.tipo == identificador || token.tipo == digito_float || token.tipo == digito_int || token.tipo == caracter || token.tipo == parenteses1){	
-					temp1=temporal;
-					temporal=0;
 					status2=TERMO(arq);
-					temp2=temporal;
-					temporal=temp1;
 					if(status2.tipo==0)
 						return tokenRetorno;
 					else{
 						if((status.tipo == _char)&&(status2.tipo != _char)){
 							printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTipo nao compativel com char!\n", linha, coluna, token.tipo); return tokenRetorno;
-						}else if((status.tipo == _char) && (status2.tipo == _char)){
-							if(temporal==0){				
-								if(temporalrelacional!=0){temporal++;}
-								if(tipo ==  adicao){
-									printf("\tT%d = %s + %s\n",temporal,status.valor,status2.valor);temporal++;
-								}else{
-									printf("\tT%d = %s - %s\n",temporal,status.valor,status2.valor);temporal++;
-								}
-							}else{
-								if(temp2==0){
-									if(tipo == adicao){
-										printf("\tT%d = T%d + %s\n",temporal,temporal-1,status2.valor);temporal++;
-									}else{
-										printf("\tT%d = T%d - %s\n",temporal,temporal-1,status2.valor);temporal++;
-									}
-								}else{
-									if(tipo == adicao){
-										printf("\tT%d = T%d + T%d\n",temporal,temporal-1,temp2-1);temporal++;
-									}else{
-										printf("\tT%d = T%d - T%d\n",temporal,temporal-1,temp2-1);temporal++;
-									}
-								}
-							}
 						}
 						if((status.tipo == _float ||  status.tipo == digito_float)&&(status2.tipo != _int && status2.tipo != _float && status2.tipo !=  digito_int && status2.tipo != digito_float)){
 							printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTipo nao compativel com int ou float!\n", linha, coluna, token.tipo); return tokenRetorno;
-						}else if((status.tipo == _float ||  status.tipo == digito_float)&&(status2.tipo == _int || status2.tipo == _float || status2.tipo ==  digito_int || status2.tipo == digito_float)){
-							if(temporal==0){
-								if(temporalrelacional!=0){temporal++;}
-								if(status2.tipo==_int || status2.tipo==digito_int){
-									printf("\tT%d = float %s\n",temporal,status2.valor);temporal++;
-									if(tipo ==  adicao){
-										printf("\tT%d = %s + T%d\n",temporal,status.valor,temporal-1);temporal++;
-									}else{
-										printf("\tT%d = %s - T%d\n",temporal,status.valor,temporal-1);temporal++;
-									}
-								}else{
-									if(tipo ==  adicao){
-										printf("\tT%d = %s + %s\n",temporal,status.valor,status2.valor);temporal++;
-									}else{
-										printf("\tT%d = %s - %s\n",temporal,status.valor,status2.valor);temporal++;
-									}
-								}
-
-							}else{
-								if(temp2==0){
-									if(status2.tipo==_int || status2.tipo==digito_int){
-										printf("\tT%d = float %s\n",temporal,status2.valor);temporal++;
-										if(tipo == adicao){
-											printf("\tT%d = T%d + T%d\n",temporal,temporal-2,temporal-1);temporal++;
-										}else{
-											printf("\tT%d = T%d - T%d\n",temporal,temporal-2,temporal-1);temporal++;
-										}
-									}else{
-										if(tipo == adicao){
-											printf("\tT%d = T%d + %s\n",temporal,temporal-1,status2.valor);temporal++;
-										}else{
-											printf("\tT%d = T%d - %s\n",temporal,temporal-1,status2.valor);temporal++;
-										}
-									}
-								}else {
-									if(status2.tipo==_int || status2.tipo==digito_int){
-										printf("\tT%d = float T%d\n",temporal,temp2-1);temporal++;
-										if(tipo == adicao){
-											printf("\tT%d = T%d + T%d\n",temporal,temporal-2,temporal-1);temporal++;
-										}else{
-											printf("\tT%d = T%d - T%d\n",temporal,temporal-2,temporal-1);temporal++;
-										}
-									}else{
-										if(tipo == adicao){
-											printf("\tT%d = T%d + T%d\n",temporal,temporal-1,temp2-1);temporal++;
-										}else{
-											printf("\tT%d = T%d - T%d\n",temporal,temporal-1,temp2-1);temporal++;
-										}
-									}
-								}
-							}
-							status2.tipo=_float;
 						}
 						if((status.tipo == _int || status.tipo == digito_int)&&(status2.tipo != _int  && status2.tipo !=  digito_int && status2.tipo != _float && status2.tipo != digito_float)){
 							printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTipo nao compativel com int!\n", linha, coluna, token.tipo); return tokenRetorno;
-						}else if((status.tipo == _int || status.tipo == digito_int)&&(status2.tipo == _float || status2.tipo ==  digito_float)){
-							if(temporal==0){
-								if(temporalrelacional!=0){temporal++;}
-								if(status.tipo==_int || status.tipo==digito_int){
-									printf("\tT%d = float %s\n",temporal,status.valor);temporal++;
-									if(tipo ==  adicao){
-										printf("\tT%d = T%d + %s\n",temporal,temporal-1,status2.valor);temporal++;
-									}else{
-										printf("\tT%d = T%d - %s\n",temporal,temporal-1,status2.valor);temporal++;
-									}
-								}else{
-									if(tipo ==  adicao){
-										printf("\tT%d = %s + %s\n",temporal,status.valor,status2.valor);temporal++;
-									}else{
-										printf("\tT%d = %s - %s\n",temporal,status.valor,status2.valor);temporal++;
-									}
-								}
-							}else{
-								if(temp2==0){
-									if(tipo == adicao){
-										printf("\tT%d = T%d + %s\n",temporal,temporal-1,status2.valor);temporal++;
-									}else{
-										printf("\tT%d = T%d - %s\n",temporal,temporal-1,status2.valor);temporal++;
-									}
-								}else{
-									if(tipo == adicao){
-										printf("\tT%d = T%d + T%d\n",temporal,temporal-1,temp2-1);temporal++;
-									}else{
-										printf("\tT%d = T%d - T%d\n",temporal,temporal-1,temp2-1);temporal++;
-									}
-								}
-							}
-							status.tipo=_float;
-						}else if((status.tipo == _int || status.tipo == digito_int)&&(status2.tipo == _int  || status2.tipo ==  digito_int)){
-							if(temporal==0){
-								if(temporalrelacional!=0)temporal++;
-								if(tipo ==  adicao){
-									printf("\tT%d = %s + %s\n",temporal,status.valor,status2.valor);temporal++;
-								}else{
-									printf("\tT%d = %s - %s\n",temporal,status.valor,status2.valor);temporal++;
-								}
-							}else{
-								if(temp2==0){
-									if(tipo ==  adicao){
-										printf("\tT%d = T%d + %s\n",temporal,temporal-1,status2.valor);temporal++;
-									}else{
-										printf("\tT%d = T%d - %s\n",temporal,temporal-1,status2.valor);temporal++;
-									}
-								}else{
-									if(tipo ==  adicao){
-										printf("\tT%d = T%d + T%d\n",temporal,temporal-1,temp2-1);temporal++;
-									}else{
-										printf("\tT%d = T%d - T%d\n",temporal,temporal-1,temp2-1);temporal++;
-									}
-								}
-							}
 						}
-						status=status2;
+						if(tipo == adicao){
+							if((status.tipo==_int || status.tipo==digito_int)&&(status2.tipo==_float || status2.tipo==digito_float)){
+								printf("\t%s = float %s\n",converte(),status.valor);atualizaT(&status);status.tipo=_float;
+							}
+							if((status2.tipo==_int || status2.tipo==digito_int)&&(status.tipo==_float || status.tipo==digito_float)){
+								printf("\t%s = float %s\n",converte(),status2.valor);atualizaT(&status2);status.tipo=_float;
+							}
+							printf("\t%s = %s + %s\n",converte(),status.valor,status2.valor);atualizaT(&status);
+						}else{
+							if((status.tipo==_int || status.tipo==digito_int)&&(status2.tipo==_float || status2.tipo==digito_float)){
+								printf("\t%s = float %s\n",converte(),status.valor);atualizaT(&status);status.tipo=_float;
+							}
+							if((status2.tipo==_int || status2.tipo==digito_int)&&(status.tipo==_float || status.tipo==digito_float)){
+								printf("\t%s = float %s\n",converte(),status2.valor);atualizaT(&status2);status.tipo=_float;
+							}
+							printf("\t%s = %s - %s\n",converte(),status.valor,status2.valor);atualizaT(&status);
+						}
 					}
-
 				}else {
 					printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nExpr_arit incorreta, falta de um identificador,numero ou caracter!\n", linha, coluna, token.tipo); return tokenRetorno;
 				}
@@ -651,9 +508,9 @@ TOKEN EXPR_ARIT(FILE *arq){
 
 
 TOKEN TERMO(FILE *arq){
-	int tipo,cont=0;
 	TOKEN status,status2;
 	TOKEN tokenRetorno;
+	int tipo;
 	tokenRetorno.tipo=0;tokenRetorno.valor[0]='\0';
 	if (token.tipo == identificador || token.tipo == digito_float || token.tipo == digito_int || token.tipo == caracter || token.tipo == parenteses1){	
 		status=FATOR(arq);
@@ -661,7 +518,6 @@ TOKEN TERMO(FILE *arq){
 			return tokenRetorno;
 		}else{
 			while(token.tipo ==  multiplicacao || token.tipo == divisao){
-				cont++;
 				tipo=token.tipo;
 				token=scanner(arq);
 				if (token.tipo == identificador || token.tipo == digito_float || token.tipo == digito_int || token.tipo == caracter || token.tipo == parenteses1){	
@@ -671,116 +527,31 @@ TOKEN TERMO(FILE *arq){
 					else{
 						if((status.tipo == _char)&&(status2.tipo != _char)){
 							printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTipo nao compativel com char!\n", linha, coluna, token.tipo); return tokenRetorno;
-						}else if((status.tipo == _char) && (status2.tipo == _char)){
-							if(temporal==0){				
-								if(temporalrelacional!=0){temporal++;}
-								if(temp1!=0){temporal=temp1;}
-								if(tipo ==  multiplicacao){
-									printf("\tT%d = %s * %s\n",temporal,status.valor,status2.valor);temporal++;
-								}else{
-									printf("\tT%d = %s / %s\n",temporal,status.valor,status2.valor);temporal++;
-								}
-							}else{
-								if(tipo == multiplicacao){
-									printf("\tT%d = T%d * %s\n",temporal,temporal-1,status2.valor);temporal++;
-								}else{
-									printf("\tT%d = T%d / %s\n",temporal,temporal-1,status2.valor);temporal++;
-								}
-							}
 						}
 						if((status.tipo == _float ||  status.tipo == digito_float)&&(status2.tipo != _int && status2.tipo != _float && status2.tipo !=  digito_int && status2.tipo != digito_float)){
 							printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTipo nao compativel com int ou float!\n", linha, coluna, token.tipo); return tokenRetorno;
-						}else if((status.tipo == _float ||  status.tipo == digito_float)&&(status2.tipo == _int || status2.tipo == _float || status2.tipo ==  digito_int || status2.tipo == digito_float)){
-							if(temporal==0){
-								if(temporalrelacional!=0){temporal++;}
-								if(temp1!=0){temporal=temp1;}
-								if(status2.tipo==_int || status2.tipo==digito_int){
-									printf("\tT%d = float %s\n",temporal,status2.valor);temporal++;
-									if(tipo ==  multiplicacao){
-										printf("\tT%d = %s * T%d\n",temporal,status.valor,temporal-1);temporal++;
-									}else{
-										printf("\tT%d = %s / T%d\n",temporal,status.valor,temporal-1);temporal++;
-									}
-								}else{
-									if(tipo ==  multiplicacao){
-										printf("\tT%d = %s * %s\n",temporal,status.valor,status2.valor);temporal++;
-									}else{
-										printf("\tT%d = %s / %s\n",temporal,status.valor,status2.valor);temporal++;
-									}
-								}
-
-							}else{
-								if(status2.tipo==_int || status2.tipo==digito_int){
-									printf("\tT%d = float %s\n",temporal,status2.valor);temporal++;
-									if(tipo == multiplicacao){
-										printf("\tT%d = T%d * T%d\n",temporal,temporal-2,temporal-1);temporal++;
-									}else{
-										printf("\tT%d = T%d / T%d\n",temporal,temporal-2,temporal-1);temporal++;
-									}
-								}else{
-									if(tipo == multiplicacao){
-										printf("\tT%d = T%d * %s\n",temporal,temporal-1,status2.valor);temporal++;
-									}else{
-										printf("\tT%d = T%d / %s\n",temporal,temporal-1,status2.valor);temporal++;
-									}
-								}
-
-							}
 						}
 						if((status.tipo == _int || status.tipo == digito_int)&&(status2.tipo != _int  && status2.tipo !=  digito_int && status2.tipo != _float && status2.tipo != digito_float)){
 							printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTipo nao compativel com int!\n", linha, coluna, token.tipo); return tokenRetorno;
-						}else if((status.tipo == _int || status.tipo == digito_int)&&(status2.tipo == _float || status2.tipo ==  digito_float)){
-							if(temporal==0){
-								if(temporalrelacional!=0){temporal++;}
-								if(temp1!=0){temporal=temp1;}
-								if(status.tipo==_int || status.tipo==digito_int){
-									printf("\tT%d = float %s\n",temporal,status.valor);temporal++;
-									if(tipo ==  multiplicacao){
-										printf("\tT%d = T%d * %s\n",temporal,temporal-1,status2.valor);temporal++;
-									}else{
-										printf("\tT%d = T%d / %s\n",temporal,temporal-1,status2.valor);temporal++;
-									}
-								}else{
-									if(tipo ==  multiplicacao){
-										printf("\tT%d = %s * %s\n",temporal,status.valor,status2.valor);temporal++;
-									}else{
-										printf("\tT%d = %s / %s\n",temporal,status.valor,status2.valor);temporal++;
-									}
-								}
-							}else{
-								if(tipo == multiplicacao){
-									printf("\tT%d = T%d * %s\n",temporal,temporal-1,status2.valor);temporal++;
-								}else{
-									printf("\tT%d = T%d / %s\n",temporal,temporal-1,status2.valor);temporal++;
-								}
-							}
-							status.tipo=_float;
-						}else if((status.tipo == _int || status.tipo == digito_int)&&(status2.tipo == _int  || status2.tipo ==  digito_int)){
-							if(temporal==0){
-								if(temporalrelacional!=0)temporal++;
-								if(temp1!=0){temporal=temp1;}
-								printf("\tT%d = float %s\n",temporal,status.valor);temporal++;
-								printf("\tT%d = float %s\n",temporal,status2.valor);temporal++;
-								if(tipo ==  multiplicacao){
-									printf("\tT%d = T%d * T%d\n",temporal,temporal-2,temporal-1);temporal++;
-								}else{
-									printf("\tT%d = T%d / T%d\n",temporal,temporal-2,temporal-1);temporal++;
-								}
-							}else{
-								printf("\tT%d = float T%d\n",temporal,temporal);temporal++;
-								printf("\tT%d = float %s\n",temporal,status2.valor);temporal++;
-								if(tipo ==  multiplicacao){
-									printf("\tT%d = T%d * T%d\n",temporal,temporal-2,temporal-1);temporal++;
-								}else{
-									printf("\tT%d = T%d / T%d\n",temporal,temporal-2,temporal-1);temporal++;
-								}
-							}
-							status2.tipo=_float;
-							status.tipo=_float;
 						}
-						status=status2;
+						if(tipo == multiplicacao){
+							if((status.tipo==_int || status.tipo==digito_int)&&(status2.tipo==_float || status2.tipo==digito_float)){
+								printf("\t%s = float %s\n",converte(),status.valor);atualizaT(&status);status.tipo=_float;
+							}
+							if((status2.tipo==_int || status2.tipo==digito_int)&&(status.tipo==_float || status.tipo==digito_float)){
+								printf("\t%s = float %s\n",converte(),status2.valor);atualizaT(&status2);status.tipo=_float;
+							}
+							printf("\t%s = %s * %s\n",converte(),status.valor,status2.valor);atualizaT(&status);
+						}else{
+							if(status.tipo==_int || status.tipo==digito_int){
+								printf("\t%s = float %s\n",converte(),status.valor);atualizaT(&status);status.tipo=_float;
+							}
+							if(status2.tipo==_int || status2.tipo==digito_int){
+								printf("\t%s = float %s\n",converte(),status2.valor);atualizaT(&status2);status.tipo=_float;
+							}
+							printf("\t%s = %s / %s\n",converte(),status.valor,status2.valor);atualizaT(&status);
+						}
 					}
-
 				}else {
 					printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTermo incorreto, falta de um identificador,numero ou caracter!\n", linha, coluna, token.tipo); return tokenRetorno;
 				}
