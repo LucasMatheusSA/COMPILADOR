@@ -45,7 +45,7 @@ int TIPO( FILE *arq) {
 		token=scanner(arq);return 1;
 	}
 	else {
-		printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTipo invalido!\n", linha, coluna, token.tipo); return 0;
+		printf("(SEMANTICO)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTipo invalido!\n", linha, coluna, token.tipo); return 0;
 	}
 }
 
@@ -57,7 +57,7 @@ loop_DECL_VAR_int:
 		if (token.tipo == identificador) {
 			resp=busca1(fila,token);
 			if(resp==1){
-				printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nVariavel ja declarada!\n", linha, coluna, token.tipo); return 0;
+				printf("(SEMANTICO)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nVariavel ja declarada!\n", linha, coluna, token.tipo); return 0;
 			}else{
 				token.tipo=_int;
 				push(&fila,token);
@@ -84,7 +84,7 @@ loop_DECL_VAR_float:
 		if (token.tipo == identificador) {
 			resp=busca1(fila,token);
 			if(resp==1){
-				printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nVariavel ja declarada!\n", linha, coluna, token.tipo); return 0;
+				printf("(SEMANTICO)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nVariavel ja declarada!\n", linha, coluna, token.tipo); return 0;
 			}else{
 				token.tipo=_float;
 				push(&fila,token);
@@ -111,7 +111,7 @@ loop_DECL_VAR_char:
 		if (token.tipo == identificador) {
 			resp=busca1(fila,token);
 			if(resp==1){
-				printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nVariavel ja declarada!\n", linha, coluna, token.tipo); return 0;
+				printf("(SEMANTICO)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nVariavel ja declarada!\n", linha, coluna, token.tipo); return 0;
 			}else{
 				token.tipo=_char;
 				push(&fila,token);
@@ -373,7 +373,7 @@ int ATRIBUICAO(FILE *arq) {
 	else {
 		resp=busca(fila,token);
 		if(resp==0){
-			printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \n Variavel nao declarada!\n", linha, coluna, token.tipo); return 0;
+			printf("(SEMANTICO)ERRO na linha %d, coluna %d, ultimo token lido (%d): \n Variavel nao declarada!\n", linha, coluna, token.tipo); return 0;
 		}
 		aux=busca2(fila,token);
 		token = scanner(arq);
@@ -396,7 +396,7 @@ int ATRIBUICAO(FILE *arq) {
 						return 1;
 					}
 				}else{
-					printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nErro de compatibilidade na atribuicao!\n", linha, coluna, token.tipo); return 0;
+					printf("(SEMANTICO)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nErro de compatibilidade na atribuicao!\n", linha, coluna, token.tipo); return 0;
 				}
 			}
 			else {
@@ -439,7 +439,7 @@ int EXPR_RELACIONAL(FILE *arq) {
 					printf("\tT0 = %s %s %s\n",status.valor,relacional,aux.valor);
 					return 1;
 				}else{ 
-					printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nErro de compatibilidade de tipo na expressao aritimetica!\n", linha, coluna, token.tipo); return 0;
+					printf("(SEMANTICO)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nErro de compatibilidade de tipo na expressao aritimetica!\n", linha, coluna, token.tipo); return 0;
 				}
 			}
 		}
@@ -468,13 +468,13 @@ TOKEN EXPR_ARIT(FILE *arq){
 						return tokenRetorno;
 					else{
 						if((status.tipo == _char)&&(status2.tipo != _char)){
-							printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTipo nao compativel com char!\n", linha, coluna, token.tipo); return tokenRetorno;
+							printf("(SEMANTICO)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTipo nao compativel com char!\n", linha, coluna, token.tipo); return tokenRetorno;
 						}
 						if((status.tipo == _float ||  status.tipo == digito_float)&&(status2.tipo != _int && status2.tipo != _float && status2.tipo !=  digito_int && status2.tipo != digito_float)){
-							printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTipo nao compativel com int ou float!\n", linha, coluna, token.tipo); return tokenRetorno;
+							printf("(SEMANTICO)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTipo nao compativel com int ou float!\n", linha, coluna, token.tipo); return tokenRetorno;
 						}
 						if((status.tipo == _int || status.tipo == digito_int)&&(status2.tipo != _int  && status2.tipo !=  digito_int && status2.tipo != _float && status2.tipo != digito_float)){
-							printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTipo nao compativel com int!\n", linha, coluna, token.tipo); return tokenRetorno;
+							printf("(SEMANTICO)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTipo nao compativel com int!\n", linha, coluna, token.tipo); return tokenRetorno;
 						}
 						if(tipo == adicao){
 							if((status.tipo==_int || status.tipo==digito_int)&&(status2.tipo==_float || status2.tipo==digito_float)){
@@ -526,13 +526,13 @@ TOKEN TERMO(FILE *arq){
 						return tokenRetorno;
 					else{
 						if((status.tipo == _char)&&(status2.tipo != _char)){
-							printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTipo nao compativel com char!\n", linha, coluna, token.tipo); return tokenRetorno;
+							printf("(SEMANTICO)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTipo nao compativel com char!\n", linha, coluna, token.tipo); return tokenRetorno;
 						}
 						if((status.tipo == _float ||  status.tipo == digito_float)&&(status2.tipo != _int && status2.tipo != _float && status2.tipo !=  digito_int && status2.tipo != digito_float)){
-							printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTipo nao compativel com int ou float!\n", linha, coluna, token.tipo); return tokenRetorno;
+							printf("(SEMANTICO)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTipo nao compativel com int ou float!\n", linha, coluna, token.tipo); return tokenRetorno;
 						}
 						if((status.tipo == _int || status.tipo == digito_int)&&(status2.tipo != _int  && status2.tipo !=  digito_int && status2.tipo != _float && status2.tipo != digito_float)){
-							printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTipo nao compativel com int!\n", linha, coluna, token.tipo); return tokenRetorno;
+							printf("(SEMANTICO)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nTipo nao compativel com int!\n", linha, coluna, token.tipo); return tokenRetorno;
 						}
 						if(tipo == multiplicacao){
 							if((status.tipo==_int || status.tipo==digito_int)&&(status2.tipo==_float || status2.tipo==digito_float)){
@@ -587,7 +587,7 @@ TOKEN FATOR(FILE *arq) {
 	}
 	else if (token.tipo == identificador || token.tipo == digito_float || token.tipo == digito_int || token.tipo == caracter) {
 		if(token.tipo==identificador && busca(fila,token) == 0){
-			printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nVariavel nao declarada!\n", linha, coluna, token.tipo); return tokenRetorno;
+			printf("(SEMANTICO)ERRO na linha %d, coluna %d, ultimo token lido (%d): \nVariavel nao declarada!\n", linha, coluna, token.tipo); return tokenRetorno;
 		}
 		if(token.tipo == identificador){
 			tokenRetorno=busca2(fila,token);
