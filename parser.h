@@ -4,6 +4,7 @@
 
 int variavel();
 
+void atualizaT(TOKEN *token);
 char * converte();
 int TIPO( FILE *arq);
 int DECL_VAR( FILE *arq);
