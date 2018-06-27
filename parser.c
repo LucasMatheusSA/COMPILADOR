@@ -1,4 +1,5 @@
 //parser.c
+// PARSER / SEMANTICO / GERADOR DE CODIGO
 #include "types.h"
 #include "scanner.h"
 #include "parser.h"
@@ -7,9 +8,8 @@
 char T[50];
 int temporalrelacional=0,temp1=0;
 int temporal=0,label=0;
-TOKEN token;
-TTOKEN *fila=NULL;
 
+TTOKEN *fila=NULL;
 /*
 <programa> ::= int main"("")" <bloco>                                                                       |precisa X
 <bloco> ::= �{� {<decl_var>}* {<comando>}* �}�                                                              |
@@ -24,7 +24,7 @@ TTOKEN *fila=NULL;
 <decl_var> ::= <tipo> <id> {,<id>}* ";"                                                                     |
 <tipo> ::= int | float | char                                                                               |
 
-printf("(PARSER)ERRO na linha %d, coluna %d, ultimo token lido (%d): \n !\n", linha, coluna, token.tipo); return 0;
+printf("ERRO na linha %d, coluna %d, ultimo token lido (%d): \n !\n", linha, coluna, token.tipo); return 0;
 */
 
 //*************************************************************************************************************************
@@ -40,7 +40,7 @@ void atualizaT(TOKEN *token){
 //*************************************************************************************************************************
 
 
-int TIPO( FILE *arq) {
+int TIPO( FILE *arq) {// <tipo> ::= int | float | char
 	if (token.tipo == _int || token.tipo == _float || token.tipo == _char) {
 		token=scanner(arq);return 1;
 	}
@@ -49,7 +49,7 @@ int TIPO( FILE *arq) {
 	}
 }
 
-int DECL_VAR(FILE *arq) {
+int DECL_VAR(FILE *arq) {// <decl_var> ::= <tipo> <id> {,<id>}* ";"
 	int resp;
 	if (token.tipo == _int ) {
 loop_DECL_VAR_int:
@@ -137,7 +137,7 @@ loop_DECL_VAR_char:
 	}
 }
 
-int BLOCO(FILE *arq) {
+int BLOCO(FILE *arq) {// <bloco> ::= “{“ {<decl_var>}* {<comando>}* “}”
 	int status;
 	if (token.tipo == colchete1) {
 		token.tipo=0;token.valor[0]='\0';
@@ -179,7 +179,7 @@ int BLOCO(FILE *arq) {
 	}
 }
 
-int COMANDO(FILE *arq) {
+int COMANDO(FILE *arq) {// <comando> ::= <comando_básico> | <iteração> | if "("<expr_relacional>")" <comando> {else <comando>}?
 	int status,label1=label;
 	if (token.tipo == identificador || token.tipo == colchete1) {
 		status=COMANDO_BASICO(arq);
@@ -251,7 +251,7 @@ int COMANDO(FILE *arq) {
 	}
 }
 
-int COMANDO_BASICO(FILE *arq) {
+int COMANDO_BASICO(FILE *arq) {// <comando_básico> ::= <atribuição> | <bloco>
 	int status;
 	if (token.tipo == identificador) {
 		status=ATRIBUICAO( arq);
@@ -275,7 +275,7 @@ int COMANDO_BASICO(FILE *arq) {
 	}
 }
 
-int INTERACAO(FILE *arq) {
+int INTERACAO(FILE *arq) {// <iteração> ::= while "("<expr_relacional>")" <comando> | do <comando> while "("<expr_relacional>")"";"
 	int status,label1=label;
 	if (token.tipo == _while) {
 		label++;label++;
@@ -364,7 +364,7 @@ int INTERACAO(FILE *arq) {
 	}
 }
 
-int ATRIBUICAO(FILE *arq) {
+int ATRIBUICAO(FILE *arq) {// <atribuição> ::= <id> "=" <expr_arit> ";"
 	TOKEN aux,status;
 	int resp;
 	if (token.tipo != identificador) {
@@ -406,7 +406,7 @@ int ATRIBUICAO(FILE *arq) {
 	}
 }
 
-int EXPR_RELACIONAL(FILE *arq) {
+int EXPR_RELACIONAL(FILE *arq) {// <expr_relacional> ::= <expr_arit> <op_relacional> <expr_arit>
 	TOKEN status;
 	TOKEN tokenRetorno,aux;
 	char relacional[3];
@@ -449,7 +449,7 @@ int EXPR_RELACIONAL(FILE *arq) {
 	}
 }
 
-TOKEN EXPR_ARIT(FILE *arq){
+TOKEN EXPR_ARIT(FILE *arq){// <expr_arit> ::= <expr_arit> "+" <termo>   | <expr_arit> "-" <termo> | <termo>
 	TOKEN status,status2;
 	TOKEN tokenRetorno;
 	int tipo;
@@ -507,7 +507,7 @@ TOKEN EXPR_ARIT(FILE *arq){
 }
 
 
-TOKEN TERMO(FILE *arq){
+TOKEN TERMO(FILE *arq){// <termo> ::= <termo> "*" <fator> | <termo> “/” <fator> | <fator>
 	TOKEN status,status2;
 	TOKEN tokenRetorno;
 	int tipo;
@@ -564,7 +564,7 @@ TOKEN TERMO(FILE *arq){
 
 }
 
-TOKEN FATOR(FILE *arq) {
+TOKEN FATOR(FILE *arq) {// <fator> ::= “(“ <expr_arit> “)” | <id> | <real> | <inteiro> | <char>
 	TOKEN status;
 	TOKEN tokenRetorno;
 	char c[4];
@@ -605,7 +605,7 @@ TOKEN FATOR(FILE *arq) {
 	}
 }
 
-void parser(FILE *arq) {
+void parser(FILE *arq) {// PROGRAMA  int main (){ BLOCO }
 	int status;
 	printf("Programa:\n");
 	token = scanner(arq);

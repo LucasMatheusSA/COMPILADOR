@@ -7,6 +7,7 @@
 #ifndef DEFINICOES
 #define DEFINICOES
 
+
 int coluna,linha;
 
 enum ID_Digito_Float {
@@ -29,11 +30,14 @@ typedef struct TOKEN {
 	int tipo;
 	char valor[50];
 }TOKEN;
- 
+
+ TOKEN token;
+
 typedef struct TTOKEN {
 	int tipo;
 	char valor[50];
 	struct TTOKEN *prox;
 }TTOKEN;
+
 
 #endif

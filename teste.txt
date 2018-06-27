@@ -4,7 +4,9 @@ int main() {
     float Lucas,ana,joao;
     char menino,menina;
 
-    Lucas = (2*2)+(1*1);
+    Lucas =(2-(1+1)*x);
+
+    Lucas=1/2;
 
     Lucas = 2.0 * 5;
 

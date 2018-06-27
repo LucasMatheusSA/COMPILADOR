@@ -2,8 +2,29 @@
 #include "types.h"
 #include "scanner.h"
 
-TOKEN scanner(FILE *arq) {
-	TOKEN token;
+// Símbolos
+
+// letra ::= [a-z]
+
+// dígito ::= [0-9]
+
+// id ::= (letra | "_") (letra | "_" | dígito)*
+
+// oprelacional ::= <  |  >  |  <=  |  >=  |  ==  |  !=
+
+// oparitmético ::= "+"  |  "-"  |  "*"  |  "/"  |  "="
+
+// especial ::= ")"  |  "("  |  "{"  |  "}"  |  ","  |  ";"
+
+// palreservada ::= main  |  if  |  else  |  while  |  do  |  for  |  int  |  float  |  char
+
+// inteiro ::= dígito+
+
+// float ::= dígito*.dígito+
+
+// char ::= 'letra'  |  'dígito'         // Uma constante do tipo char (entre aspas simples)
+
+TOKEN scanner(FILE *arq) {	
 	int i;
 	static char c;
  
@@ -12,7 +33,7 @@ TOKEN scanner(FILE *arq) {
 		c = fgetc(arq);
 		while (c==' ') { c = fgetc(arq); }
  
-		// OP RELACIONAL
+		// ********************************************* OP RELACIONAL *********************************************
 		if (c == '>') {
 			c = fgetc(arq); coluna++;
 			if (c == '=') {
@@ -48,19 +69,10 @@ TOKEN scanner(FILE *arq) {
 			}
 		}
  
-		// OP ARITIMETICO
-		if (c == '+') {
-			token.tipo = adicao;
-			return token;
-		}
-		if (c == '-') {
-			token.tipo = subtracao;
-			return token;
-		}
-		if (c == '*') {
-			token.tipo = multiplicacao;
-			return token;
-		}
+		// // ********************************************* OP ARITIMETICO *********************************************
+		if (c == '+') {token.tipo = adicao;return token;}
+		if (c == '-') {token.tipo = subtracao;return token;}
+		if (c == '*') {token.tipo = multiplicacao;return token;}
 		if (c == '=') {
 			c = fgetc(arq); coluna++;
 			if (c == '=') {
@@ -113,507 +125,36 @@ TOKEN scanner(FILE *arq) {
 			return token;
 		}
  
-		// ESPECIAIS 
-		if (c == '(') {
-			token.tipo = parenteses1;
-			return token;
-		}
-		if (c == ')') {
-			token.tipo = parenteses2;
-			return token;
-		}
-		if (c == '{') {
-			token.tipo = colchete1;
-			return token;
-		}
-		if (c == '}') {
-			token.tipo = colchete2;
-			return token;
-		}
-		if (c == ';') {
-			token.tipo = pvirgula;
-			return token;
-		}
-		if (c == ',') {
-			token.tipo = virgula;
-			return token;
-		}
- 
-		// PALAVRA RESERVADA
-		if(c=='m'){
-			c = fgetc(arq); coluna++;
-			if (c == 'a') {
-				c = fgetc(arq); coluna++;
-				if (c == 'i') {
-					c = fgetc(arq); coluna++;
-					if (c == 'n') {
-						c = fgetc(arq); coluna++;
-						if (!isalnum(c) && !isalpha(c) && c!='_') {
-							ungetc(c,arq);
-						
-							token.tipo = _main;
-							return token;
-						}
-						token.valor[0] = 'm';
-						token.valor[1] = 'a';
-						token.valor[2] = 'i';
-						token.valor[3] = 'n';
-						for (i = 4; isalpha(c) || c == '_' || isalnum(c); i++) {
-							token.valor[i] = c;
-							c = fgetc(arq); coluna++;
-						}
-						ungetc(c,arq);
-						token.valor[i] = 0;token.valor[i] = '\0';
-						token.tipo = identificador;
-						return token;
-					}
- 
-					token.valor[0] = 'm';
-					token.valor[1] = 'a';
-					token.valor[2] = 'i';
-					for (i = 3; isalpha(c) || c == '_' || isalnum(c); i++) {
-						token.valor[i] = c;
-						c = fgetc(arq); coluna++;
-					}
-					ungetc(c,arq);
-					token.valor[i] = 0;token.valor[i] = '\0';
-					token.tipo = identificador;
-					return token;
-				}
-				token.valor[0] = 'm';
-				token.valor[1] = 'a';
-				for (i = 2; isalpha(c) || c == '_' || isalnum(c); i++) {
-					token.valor[i] = c;
-					c = fgetc(arq); coluna++;
-				}
-				ungetc(c,arq);
-				token.valor[i] = 0;token.valor[i] = '\0';
-				token.tipo = identificador;
-				return token;
-			}
-			token.valor[0] = 'm';
-			for (i = 1; isalpha(c) || c == '_' || isalnum(c); i++) {
-				token.valor[i] = c;
-				c = fgetc(arq); coluna++;
-			}
-			ungetc(c,arq);
-			token.valor[i] = 0;token.valor[i] = '\0';
-			token.tipo = identificador;
-			return token;
-		}
-		if (c=='i') {
-			c = fgetc(arq); coluna++;
-			if (c == 'f') {
-				c = fgetc(arq); coluna++;
-				if (!isalnum(c) && !isalpha(c) && c!= '_') {
-					ungetc(c,arq);
-					
-					token.tipo = _if;
-					return token;
-				}
-				token.valor[0] = 'i';
-				token.valor[1] = 'f';
-				for (i = 2; isalpha(c) || c == '_' || isalnum(c); i++) {
-					token.valor[i] = c;
-					c = fgetc(arq); coluna++;
-				}
-				ungetc(c,arq);
-				token.valor[i] = 0;token.valor[i] = '\0';
-				token.tipo = identificador;
-				return token;
-			}
-			else if (c == 'n') {
-				c = fgetc(arq); coluna++;
-				if (c == 't') {
-					c = fgetc(arq); coluna++;
-					if (!isalnum(c) && !isalpha(c) && c!= '_') {
-						ungetc(c,arq);
-						
-						token.tipo = _int;
-						return token;
-					}
-					token.valor[0] = 'i';
-					token.valor[1] = 'n';
-					token.valor[2] = 't';
-					for (i = 3; isalpha(c) || c == '_' || isalnum(c); i++) {
-						token.valor[i] = c;
-						c = fgetc(arq); coluna++;
-					}
-					ungetc(c,arq);
-					token.valor[i] = 0;token.valor[i] = '\0';
-					token.tipo = identificador;
-					return token;
-				}
-				token.valor[0] = 'i';
-				token.valor[1] = 'n';
-				for (i = 2; isalpha(c) || c == '_' || isalnum(c); i++) {
-					token.valor[i] = c;
-					c = fgetc(arq); coluna++;
-				}
-				ungetc(c,arq);
-				token.valor[i] = 0;token.valor[i] = '\0';
-				token.tipo = identificador;
-				return token;
-			}
-			token.valor[0] = 'i';
-			for (i = 1; isalpha(c) || c == '_' || isalnum(c); i++) {
-				token.valor[i] = c;
-				c = fgetc(arq); coluna++;
-			}
-			ungetc(c,arq);
-			token.valor[i] = 0;token.valor[i] = '\0';
-			token.tipo = identificador;
-			return token;
-		}
-		if (c=='d') {
-			c = fgetc(arq); coluna++;
-			if(c=='o'){
-				c = fgetc(arq); coluna++;
-				if (!isalnum(c) && !isalpha(c) && c!= '_') {
-					ungetc(c,arq);
-					
-					token.tipo = _do;
-					return token;
-				}
-				token.valor[0] = 'd';
-				token.valor[1] = 'o';
-				for (i = 2; isalpha(c) || c == '_' || isalnum(c); i++) {
-					token.valor[i] = c;
-					c = fgetc(arq); coluna++;
-				}
-				ungetc(c,arq);
-				token.valor[i] = 0;token.valor[i] = '\0';
-				token.tipo = identificador;
-				return token;
-			}
-			token.valor[0] = 'd';
-			for (i = 1; isalpha(c) || c == '_' || isalnum(c); i++) {
-				token.valor[i] = c;
-				c = fgetc(arq); coluna++;
-			}
-			ungetc(c,arq);
-			token.valor[i] = 0;token.valor[i] = '\0';
-			token.tipo = identificador;
-			return token;
-		}
-		if (c=='w') {
-			c = fgetc(arq); coluna++;
-			if (c == 'h') {
-				c = fgetc(arq); coluna++;
-				if (c == 'i') {
-					c = fgetc(arq); coluna++;
-					if (c == 'l') {
-						c = fgetc(arq); coluna++;
-						if (c == 'e') {
-							c = fgetc(arq); coluna++;
-							if (!isalnum(c) && !isalpha(c) && c!= '_') {
-								ungetc(c,arq);
-							
-								token.tipo = _while;
-								return token;
-							}
-							token.valor[0] = 'w';
-							token.valor[1] = 'h';
-							token.valor[2] = 'i';
-							token.valor[3] = 'l';
-							token.valor[4] = 'e';
-							for (i = 5; isalpha(c) || c == '_' || isalnum(c); i++) {
-								token.valor[i] = c;
-								c = fgetc(arq); coluna++;
-							}
-							ungetc(c,arq);
-							token.valor[i] = 0;token.valor[i] = '\0';
-							token.tipo = identificador;
-							return token;
-						}
-						token.valor[0] = 'w';
-						token.valor[1] = 'h';
-						token.valor[2] = 'i';
-						token.valor[3] = 'l';
-						for (i = 4; isalpha(c) || c == '_' || isalnum(c); i++) {
-							token.valor[i] = c;
-							c = fgetc(arq); coluna++;
-						}
-						ungetc(c,arq);
-						token.valor[i] = 0;token.valor[i] = '\0';
-						token.tipo = identificador;
-						return token;
-					}
-					token.valor[0] = 'w';
-					token.valor[1] = 'h';
-					token.valor[2] = 'i';
-					for (i = 3; isalpha(c) || c == '_' || isalnum(c); i++) {
-						token.valor[i] = c;
-						c = fgetc(arq); coluna++;
-					}
-					ungetc(c,arq);
-					token.valor[i] = 0;token.valor[i] = '\0';
-					token.tipo = identificador;
-					return token;
-				}
-				token.valor[0] = 'w';
-				token.valor[1] = 'h';
-				for (i = 2; isalpha(c) || c == '_' || isalnum(c); i++) {
-					token.valor[i] = c;
-					c = fgetc(arq); coluna++;
-				}
-				ungetc(c,arq);
-				token.valor[i] = 0;token.valor[i] = '\0';
-				token.tipo = identificador;
-				return token;
-			}
-			token.valor[0] = 'w';
-			for (i = 1; isalpha(c) || c == '_' || isalnum(c); i++) {
-				token.valor[i] = c;
-				c = fgetc(arq); coluna++;
-			}
-			ungetc(c,arq);
-			token.valor[i] = 0;token.valor[i] = '\0';
-			token.tipo = identificador;
-			return token;
-		}
-		if (c=='f') {
-			c = fgetc(arq); coluna++;
-			if (c == 'l') {
-				c = fgetc(arq); coluna++;
-				if (c == 'o') {
-					c = fgetc(arq); coluna++;
-					if (c == 'a') {
-						c = fgetc(arq); coluna++;
-						if (c == 't') {
-							c = fgetc(arq); coluna++;
-							if (!isalnum(c) && !isalpha(c) && c!= '_') {
-								ungetc(c,arq);
-								
-								token.tipo = _float;
-								return token;
-							}
-							token.valor[0] = 'f';
-							token.valor[1] = 'l';
-							token.valor[2] = 'o';
-							token.valor[3] = 'a';
-							token.valor[4] = 't';
-							for (i = 5; isalpha(c) || c == '_' || isalnum(c); i++) {
-								token.valor[i] = c;
-								c = fgetc(arq); coluna++;
-							}
-							ungetc(c,arq);
-							token.valor[i] = 0;token.valor[i] = '\0';
-							token.tipo = identificador;
-							return token;
-						}
-						token.valor[0] = 'f';
-						token.valor[1] = 'l';
-						token.valor[2] = 'o';
-						token.valor[3] = 'a';
-						for (i = 4; isalpha(c) || c == '_' || isalnum(c); i++) {
-							token.valor[i] = c;
-							c = fgetc(arq); coluna++;
-						}
-						ungetc(c,arq);
-						token.valor[i] = 0;token.valor[i] = '\0';
-						token.tipo = identificador;
-						return token;
-					}
-					token.valor[0] = 'f';
-					token.valor[1] = 'l';
-					token.valor[2] = 'o';
-					for (i = 3; isalpha(c) || c == '_' || isalnum(c); i++) {
-						token.valor[i] = c;
-						c = fgetc(arq); coluna++;
-					}
-					ungetc(c,arq);
-					token.valor[i] = 0;token.valor[i] = '\0';
-					token.tipo = identificador;
-					return token;
-				}
-				token.valor[0] = 'f';
-				token.valor[1] = 'l';
-				for (i = 2; isalpha(c) || c == '_' || isalnum(c); i++) {
-					token.valor[i] = c;
-					c = fgetc(arq); coluna++;
-				}
-				ungetc(c,arq);
-				token.valor[i] = 0;token.valor[i] = '\0';
-				token.tipo = identificador;
-				return token;
-			}
-			else if (c == 'o') {
-				c = fgetc(arq); coluna++;
-				if (c == 'r') {
-					c = fgetc(arq); coluna++;
-					if (!isalnum(c) && !isalpha(c) && c!= '_') {
-						ungetc(c,arq);
-						
-						token.tipo = _for;
-						return token;
-					}
-					token.valor[0] = 'f';
-					token.valor[1] = 'o';
-					token.valor[2] = 'r';
-					for (i = 3; isalpha(c) || c == '_' || isalnum(c); i++) {
-						token.valor[i] = c;
-						c = fgetc(arq); coluna++;
-					}
-					ungetc(c,arq);
-					token.valor[i] = 0;token.valor[i] = '\0';
-					token.tipo = identificador;
-					return token;
-				}
-				token.valor[0] = 'f';
-				token.valor[1] = 'o';
-				for (i = 2; isalpha(c) || c == '_' || isalnum(c); i++) {
-					token.valor[i] = c;
-					c = fgetc(arq); coluna++;
-				}
-				ungetc(c,arq);
-				token.valor[i] = 0;token.valor[i] = '\0';
-				token.tipo = identificador;
-				return token;
-			}
-			token.valor[0] = 'f';
-			for (i = 1; isalpha(c) || c == '_' || isalnum(c); i++) {
-				token.valor[i] = c;
-				c = fgetc(arq); coluna++;
-			}
-			ungetc(c,arq);
-			token.valor[i] = 0;token.valor[i] = '\0';
-			token.tipo = identificador;
-			return token;
-		}
-		if (c=='c') {
-			c = fgetc(arq); coluna++;
-			if (c == 'h') {
-				c = fgetc(arq); coluna++;
-				if (c == 'a') {
-					c = fgetc(arq); coluna++;
-					if (c == 'r') {
-						c = fgetc(arq); coluna++;
-						if (!isalnum(c) && !isalpha(c) && c!= '_') {
-							ungetc(c,arq);
-							
-							token.tipo = _char;
-							return token;
-						}
-						token.valor[0] = 'c';
-						token.valor[1] = 'h';
-						token.valor[2] = 'a';
-						token.valor[3] = 'r';
-						for (i = 4; isalpha(c) || c == '_' || isalnum(c); i++) {
-							token.valor[i] = c;
-							c = fgetc(arq); coluna++;
-						}
-						ungetc(c,arq);
-						token.valor[i] = 0;token.valor[i] = '\0';
-						token.tipo = identificador;
-						return token;
-					}
-					token.valor[0] = 'c';
-					token.valor[1] = 'h';
-					token.valor[2] = 'a';
-					for (i = 3; isalpha(c) || c == '_' || isalnum(c); i++) {
-						token.valor[i] = c;
-						c = fgetc(arq); coluna++;
-					}
-					ungetc(c,arq);
-					token.valor[i] = 0;token.valor[i] = '\0';
-					token.tipo = identificador;
-					return token;
-				}
-				token.valor[0] = 'c';
-				token.valor[1] = 'h';
-				for (i = 2; isalpha(c) || c == '_' || isalnum(c); i++) {
-					token.valor[i] = c;
-					c = fgetc(arq); coluna++;
-				}
-				ungetc(c,arq);
-				token.valor[i] = 0;token.valor[i] = '\0';
-				token.tipo = identificador;
-				return token;
-			}
-			token.valor[0] = 'c';
-			for (i = 1; isalpha(c) || c == '_' || isalnum(c); i++) {
-				token.valor[i] = c;
-				c = fgetc(arq); coluna++;
-			}
-			ungetc(c,arq);
-			token.valor[i] = 0;token.valor[i] = '\0';
-			token.tipo = identificador;
-			return token;
-		}
-		if (c=='e') {
-			c = fgetc(arq); coluna++;
-			if (c == 'l') {
-				c = fgetc(arq); coluna++;
-				if (c == 's') {
-					c = fgetc(arq); coluna++;
-					if (c == 'e') {
-						c = fgetc(arq); coluna++;
-						if (!isalnum(c) && !isalpha(c) && c!= '_') {
-							ungetc(c,arq);
-							
-							token.tipo = _else;
-							return token;
-						}
-						token.valor[0] = 'e';
-						token.valor[1] = 'l';
-						token.valor[2] = 's';
-						token.valor[3] = 'e';
-						for (i = 4; isalpha(c) || c == '_' || isalnum(c); i++) {
-							token.valor[i] = c;
-							c = fgetc(arq); coluna++;
-						}
-						ungetc(c,arq);
-						token.valor[i] = 0;token.valor[i] = '\0';
-						token.tipo = identificador;
-						return token;
-					}
-					token.valor[0] = 'e';
-					token.valor[1] = 'l';
-					token.valor[2] = 's';
-					for (i = 3; isalpha(c) || c == '_' || isalnum(c); i++) {
-						token.valor[i] = c;
-						c = fgetc(arq); coluna++;
-					}
-					ungetc(c,arq);
-					token.valor[i] = 0;token.valor[i] = '\0';
-					token.tipo = identificador;
-					return token;
-				}
-				token.valor[0] = 'e';
-				token.valor[1] = 'l';
-				for (i = 2; isalpha(c) || c == '_' || isalnum(c); i++) {
-					token.valor[i] = c;
-					c = fgetc(arq); coluna++;
-				}
-				ungetc(c,arq);
-				token.valor[i] = 0;token.valor[i] = '\0';
-				token.tipo = identificador;
-				return token;
-			}
-			token.valor[0] = 'e';
-			for (i = 1; isalpha(c) || c == '_' || isalnum(c); i++) {
-				token.valor[i] = c;
-				c = fgetc(arq); coluna++;
-			}
-			ungetc(c,arq);
-			token.valor[i] = 0;token.valor[i] = '\0';
-			token.tipo = identificador;
-			return token;
-		}
- 
-		// IDENTIFICARDOR, DIGITO OU FLOAT
-		if (isalpha(c) || c == '_') {//Identificador
+		// // ********************************************* ESPECIAIS *********************************************
+		if (c == '(') {token.tipo = parenteses1;return token;}
+		if (c == ')') {token.tipo = parenteses2;return token;}
+		if (c == '{') {token.tipo = colchete1;return token;}
+		if (c == '}') {token.tipo = colchete2;return token;}
+		if (c == ';') {token.tipo = pvirgula;return token;}
+		if (c == ',') {token.tipo = virgula;return token;}
+ 		
+		// ***************************** IDENTIFICADOR , DIGITOS , PALAVRA RESERVADA *****************************
+		if (isalpha(c) || c == '_') {// IDENTIFICADOR
 			for (i = 0; isalpha(c) || c == '_' || isalnum(c); i++) {
 				token.valor[i] = c;
 				c = fgetc(arq); coluna++;
 			}
 			ungetc(c,arq);
 			token.valor[i]='\0';
-			token.tipo = identificador;
+		//  PALAVRA RESERVADA 
+			if(strcmp(token.valor,"main")==0) token.tipo=_main;
+			else if(strcmp(token.valor,"if")==0) token.tipo=_if;
+			else if(strcmp(token.valor,"else")==0) token.tipo=_else;
+			else if(strcmp(token.valor,"do")==0) token.tipo=_do;
+			else if(strcmp(token.valor,"while")==0) token.tipo=_while;
+			else if(strcmp(token.valor,"int")==0) token.tipo=_int;
+			else if(strcmp(token.valor,"float")==0) token.tipo=_float;
+			else if(strcmp(token.valor,"char")==0) token.tipo=_char;
+			else token.tipo = identificador;
 			return token;
 		}
-		if (isdigit(c)) {//Digito
+
+		if (isdigit(c)) {// DIGITOS
 			for (i = 0; isalnum(c); i++) {
 				token.valor[i] = c;
 				c = fgetc(arq); coluna++;
@@ -643,7 +184,7 @@ TOKEN scanner(FILE *arq) {
 				return token;
 			}
 		}
-		if(c=='.'){// Digito float
+		if(c=='.'){// DIGITO FLOAT
 			token.valor[0]='0';
 			token.valor[1]='.';
 			c=fgetc(arq);coluna++;
@@ -663,7 +204,9 @@ TOKEN scanner(FILE *arq) {
 				return token;
 			}
 		}
-		if(c=='\''){
+
+
+		if(c=='\''){// ASPAS SIMPLES 
 			token.valor[0]='\'';
 			c=fgetc(arq);coluna++;
 			token.valor[1]=c;
