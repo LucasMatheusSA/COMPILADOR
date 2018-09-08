@@ -1,7 +1,7 @@
 //scanner.c
 #include "types.h"
 #include "scanner.h"
-
+//ola
 // Símbolos
 
 // letra ::= [a-z]
