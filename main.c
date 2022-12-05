@@ -14,7 +14,7 @@ FILE * criarArquivo(char nome[]) {
 	return arq;
 }
 
- ///PARA PARCER
+ // PARCER
 int main(int argc,char *argv[]) {
 	TOKEN token;
 	FILE *arq;
@@ -31,7 +31,7 @@ int main(int argc,char *argv[]) {
 	return 0;
 }
 
-//PARA SCANNER
+// SCANNER
 /*
 int	main(int argc, char *argv[]) {
 	TOKEN token;
