@@ -3,8 +3,6 @@
 #include "scanner.h"
 #include "parser.h"
 
-
-
 FILE * criarArquivo(char nome[]) {
 	FILE * arq;
 	arq = fopen(nome, "r+b");
